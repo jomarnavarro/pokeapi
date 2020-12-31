@@ -5,7 +5,7 @@ const port = 3000;
 app.get('/', (req, res) => {
     //req es la peticion, 
     //res es la respuesta
-    console.log(req);
+    // console.log(req);
     res.status(200).send('Hello World!');
 });
 
@@ -29,3 +29,5 @@ app.put('/team', (req, res) => {
 app.listen(port, () => {
     console.log(`Server started at port ${port}`);
 });
+
+exports.app = app;
