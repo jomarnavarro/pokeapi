@@ -16,13 +16,43 @@ describe('Auth test suite', () => {
             })
     });
 
-    it('Should return 200 when jwt is valid', (done) => {
+    it('should return 400 when no data is provided', (done) => {
         chai.request(app)
-            .get('/team')
-            .set('Authorization', 'JWT Token')
+            .post('/login')
+            .end((err, res) => {
+                //expect invalid login
+                chai.assert.equal(res.statusCode, 400);
+                done();
+            });
+    });
+
+    it('should return 200 and token for a succesful login.', (done) => {
+        chai.request(app)
+            .post('/login')
+            .set('Content-Type', 'application/json')
+            .send({user: 'bettatech', password: '1234'})
             .end((err, res) => {
                 chai.assert.equal(res.statusCode, 200);
+                chai.assert.isNotNull(res.body.token);
                 done();
+            });
+    });
+
+    it('should return 200 when jwt is valid,', (done) => {
+        chai.request(app)
+            .post('/login')
+            .set('Content-Type', 'application/json')
+            .send({user: 'mastermind', password: '4321'})
+            .end((err, res) => {
+                chai.assert.equal(res.statusCode, 200);
+                chai.assert.isNotNull(res.body.token);
+                chai.request(app)
+                    .get('/team')
+                        .set('Authorization', `JWT ${res.body.token}`)
+                        .end((err, res) => {
+                            chai.assert.equal(res.statusCode, 200);
+                            done();
+                        });
             });
     });
 });
