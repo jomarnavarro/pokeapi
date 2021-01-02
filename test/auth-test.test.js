@@ -5,54 +5,108 @@ chai.use(chaiHttp);
 
 const app = require('../app').app;
 
-describe('Auth test suite', () => {
-    it('Should return 401 when no jwt token is available', (done) => {
-        // when the request does not have the correct jwt key
+describe('Suite de pruebas auth', () => {
+    it('should return 401 when no jwt token available', (done) => {
+        // Cuando la llamada no tiene correctamente la llave
         chai.request(app)
-            .get('/team')
+            .get('/teams')
             .end((err, res) => {
                 chai.assert.equal(res.statusCode, 401);
                 done();
-            })
+            });
     });
 
     it('should return 400 when no data is provided', (done) => {
         chai.request(app)
-            .post('/login')
+            .post('/auth/login')
             .end((err, res) => {
-                //expect invalid login
+                //Expect valid login
                 chai.assert.equal(res.statusCode, 400);
+                chai.assert.property(res.body, 'message');
+                chai.assert.equal(res.body.message, 'Missing credentials');
                 done();
             });
     });
 
-    it('should return 200 and token for a succesful login.', (done) => {
+    it('should return 401 when a bad username is provided', (done) => {
         chai.request(app)
-            .post('/login')
-            .set('Content-Type', 'application/json')
+            .post('/auth/login')
+            .set('content-type', 'application/json')
+            .send({user: 'invalid', password: '1234'})
+            .end((err, res) => {
+                //Expect invalid login
+                chai.assert.equal(res.statusCode, 401);
+                chai.assert.property(res.body, 'message');
+                chai.assert.equal(res.body.message, 'Invalid credentials');
+                done();
+            });
+    });
+
+    it('should return 400 when neither user nor password is provided', (done) => {
+        chai.request(app)
+            .post('/auth/login')
+            .set('content-type', 'application/json')
+            .send({})
+            .end((err, res) => {
+                //Expect invalid login
+                chai.assert.equal(res.statusCode, 400);
+                chai.assert.property(res.body, 'message');
+                chai.assert.equal(res.body.message, 'Missing credentials');
+                done();
+            });
+    });
+
+    it('should return 400 when no password is provided', (done) => {
+        chai.request(app)
+            .post('/auth/login')
+            .set('content-type', 'application/json')
+            .send({username: 'bettatech'})
+            .end((err, res) => {
+                //Expect invalid login
+                chai.assert.equal(res.statusCode, 400);
+                chai.assert.property(res.body, 'message');
+                chai.assert.equal(res.body.message, 'Missing credentials');
+                done();
+            });
+    });
+
+    it('should return 200 and token for succesful login', (done) => {
+        chai.request(app)
+            .post('/auth/login')
+            .set('content-type', 'application/json')
             .send({user: 'bettatech', password: '1234'})
             .end((err, res) => {
+                //Expect valid login
                 chai.assert.equal(res.statusCode, 200);
-                chai.assert.isNotNull(res.body.token);
+                chai.assert.property(res.body, 'token');
                 done();
             });
     });
 
-    it('should return 200 when jwt is valid,', (done) => {
+    it('should return 200 when jwt is valid', (done) => {
+        let user = 'mastermind';
+        let password = '4321';
         chai.request(app)
-            .post('/login')
-            .set('Content-Type', 'application/json')
-            .send({user: 'mastermind', password: '4321'})
+            .post('/auth/login')
+            .set('content-type', 'application/json')
+            .send({user: user, password: password})
             .end((err, res) => {
+                //Expect valid login
                 chai.assert.equal(res.statusCode, 200);
-                chai.assert.isNotNull(res.body.token);
+                chai.assert.property(res.body, 'token');
+
                 chai.request(app)
-                    .get('/team')
-                        .set('Authorization', `JWT ${res.body.token}`)
-                        .end((err, res) => {
-                            chai.assert.equal(res.statusCode, 200);
-                            done();
-                        });
+                    .get('/teams')
+                    .set('Authorization', `JWT ${res.body.token}`)
+                    .end((err, res) => {
+                        chai.assert.equal(res.statusCode, 200);
+                        chai.assert.property(res.body, 'trainer');
+                        chai.assert.property(res.body, 'team');
+                        chai.assert.equal(res.body.trainer, user);
+                        chai.assert.equal(res.body.team.length, 0);
+
+                        done();
+                    });
             });
     });
 });
