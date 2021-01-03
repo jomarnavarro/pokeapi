@@ -1,10 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
-//controllers
-const usersController = require('../controllers/users');
-usersController.registerUser('bettatech', '1234');
-usersController.registerUser('mastermind', '4321');
+// Controllers
+const usersController = require('./users.controller');
 
 router.route('/')
     .get((req, res) => {
@@ -16,8 +14,6 @@ router.route('/')
 
 router.route('/login')
     .post((req, res) => {
-        //make sure it has a body
-        
         if (!req.body) {
             return res.status(400).json({message: 'Missing data'});
         } else if (!req.body.user || !req.body.password) {
@@ -34,8 +30,8 @@ router.route('/login')
             const token = jwt.sign({userId: user.userId}, 'secretPassword');
             res.status(200).json(
                 {token: token}
-            );
-        });
+            )
+        })
     });
 
     exports.router = router;

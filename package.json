@@ -4,7 +4,7 @@
   "description": "pokemon exercise API",
   "main": "app.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha"
+    "test": "./node_modules/.bin/mocha **/**/*.test.js"
   },
   "author": "",
   "license": "ISC",
