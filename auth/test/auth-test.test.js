@@ -40,6 +40,35 @@ describe('Suite de pruebas auth', () => {
             });
     });
 
+    it('should return 400 when blank user and password are provided', (done) => {
+        chai.request(app)
+            .post('/auth/login')
+            .set('content-type', 'application/json')
+            .send({user: '', password: ''})
+            .end((err, res) => {
+                //expect invalid login
+                chai.assert.equal(res.statusCode, 400);
+                chai.assert.property(res.body, 'message');
+                chai.assert.equal(res.body.message, 'Missing credentials');
+                done();
+            })
+
+    });
+    it('should return 400 when correct user and blank password are provided', (done) => {
+        chai.request(app)
+            .post('/auth/login')
+            .set('content-type', 'application/json')
+            .send({user: 'bettatech', password: ''})
+            .end((err, res) => {
+                //expect invalid login
+                chai.assert.equal(res.statusCode, 400);
+                chai.assert.property(res.body, 'message');
+                chai.assert.equal(res.body.message, 'Missing credentials');
+                done();
+            });
+
+    });
+
     it('should return 401 when a bad username is provided', (done) => {
         chai.request(app)
             .post('/auth/login')
