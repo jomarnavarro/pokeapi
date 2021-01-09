@@ -40,7 +40,7 @@ const getUser = (userId) => {
     });
 }
 
-const getUserIdFromUserName = (userName) => {
+const getUserDataFromUserName = (userName) => {
     return new Promise(async (resolve, reject) => {
         let [err, result] = await to(UserModel.findOne({userName: userName}).exec());
         // making sure the result is either empty or the query from mongoDB
@@ -51,24 +51,23 @@ const getUserIdFromUserName = (userName) => {
     });
 }
 
-const checkUserCredentials = (userName, password) => {
-    return new Promise(async (resolve, reject) => {
-        let [err, user] = await to(getUserIdFromUserName(userName));
-        if (!err || user.userId) {
-            crypto.comparePassword(password, user.password, (err, result) => {
-                if (err) {
+const checkUserCredentials = (userData, password) => {
+    return new Promise( (resolve, reject) => {
+        if(userData.userName && userData.userId && userData.password) {
+            crypto.comparePassword(password, userData.password, (err, result) => {
+                if(err) {
                     reject(err);
                 } else {
                     resolve(result);
                 }
             });
         } else {
-            reject(err);
+            reject('user data is incomplete');
         }
     });
 }
 exports.registerUser = registerUser;
 exports.checkUserCredentials = checkUserCredentials;
-exports.getUserIdFromUserName = getUserIdFromUserName;
+exports.getUserDataFromUserName = getUserDataFromUserName;
 exports.getUser = getUser;
 exports.cleanUpUsers = cleanUpUsers;

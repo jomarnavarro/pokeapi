@@ -9,16 +9,16 @@ const loginUser = async (req, res) => {
         return res.status(400).json({message: 'Missing credentials'});
     }
     //check if user exists
-    let [err, user] = await to(usersController.getUserIdFromUserName(req.body.user));
-    if(!err && user.userId) {
+    let [err, userData] = await to(usersController.getUserDataFromUserName(req.body.user));
+    if(!err && userData.userId) {
         // Comprobamos credenciales
-        let [err, resp] = await to(usersController.checkUserCredentials(req.body.user, req.body.password));
+        let [err, resp] = await to(usersController.checkUserCredentials(userData, req.body.password));
         // Si no son validas, error
         if (err || !resp) {
             return res.status(401).json({message: 'Invalid credentials'});
         }
         // Si son validas, generamos un JWT y lo devolvemos
-        const token = jwt.sign({userId: user.userId}, 'secretPassword');
+        const token = jwt.sign({userId: userData.userId}, 'secretPassword');
         res.status(200).json(
             {token: token}
         )
